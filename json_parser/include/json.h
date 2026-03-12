@@ -1,9 +1,18 @@
 #pragma once
 
-class JSONObject{
+#include "elements.h"
+#include <cstddef>
+#include <string>
+
+
+class JSON{
   private:
-    char *obj_name;
+    p_data base_ptr {nullptr};
+    size_t len {0};
   public:
-    JSONObject();
+    JSON();
+    ~JSON();
+
+    bool parse(void* data, size_t len, std::string * err);
 };
 

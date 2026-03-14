@@ -27,6 +27,7 @@ class JSONObject : public Elements {
     Element_Type type {Element_Type::JSON_ELEMENT_OBJECT};
     std::string name;
     size_t length {0};
+    std::string base_data;
     std::unordered_map <std::string, std::unique_ptr<Elements>> data;
 
   public:
@@ -37,4 +38,5 @@ class JSONObject : public Elements {
 
     Element_Type  get_type();
     bool          is_valid(const std::string data_obj, size_t length, std::string &error_message);
+    std::string   get_name();
 };

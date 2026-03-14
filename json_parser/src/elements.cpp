@@ -43,3 +43,6 @@ bool JSONObject::is_valid(const std::string data_obj,
   
 }
 
+std::string JSONObject::get_name() {
+  return name;
+}

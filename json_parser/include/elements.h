@@ -1,27 +1,40 @@
 #pragma once
-#include <stddef.h>
+#include <string>
+#include <unordered_map>
+#include <memory>
 
-typedef struct _item {
-  char *key;
-  void *value;
-} Item;
-
-typedef char* p_data ;
+enum class Element_Type : short {
+  JSON_ELEMENT_NUMBER,
+  JSON_ELEMENT_BOOLEAN,
+  JSON_ELEMENT_STRING,
+  JSON_ELEMENT_OBJECT,
+  JSON_ELEMENT_ARRAY,
+  JSON_ELEMENT_NULL
+};
 
 
 class Elements {
 
   public:
-    virtual bool is_valid() = 0;
+    virtual Element_Type get_type() = 0;
+    virtual ~Elements() = default;
 
 };
 
-class Object : private Elements {
-  private:
-    p_data obj_ptr;
-    size_t len;
-  public:
-    Object(p_data data, size_t len);
-    bool is_valid();
+class JSONObject : public Elements {
 
+  private:
+    Element_Type type {Element_Type::JSON_ELEMENT_OBJECT};
+    std::string name;
+    size_t length {0};
+    std::unordered_map <std::string, std::unique_ptr<Elements>> data;
+
+  public:
+    //Constructor & Destructor
+    JSONObject();
+    JSONObject(std::string name);
+    ~JSONObject();
+
+    Element_Type  get_type();
+    bool          is_valid(const std::string data_obj, size_t length, std::string &error_message);
 };

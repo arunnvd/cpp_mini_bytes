@@ -3,6 +3,7 @@
 #include "elements.h"
 #include "utils.h"
 #include <bitset>
+#include <string>
 
 // VALID Non Function Chars
 
@@ -17,6 +18,12 @@ bool is_char_ignored(char c) {
 
 }
 
+constexpr inline bool valid_keychar(char c) {
+  return (c >= 'A' && c <= 'Z') ||
+         (c >= 'a' && c <= 'z') ||
+         (c >= '0' && c <= '9') ||
+         (c == '_') || (c == '"');
+}
 
 
 static bool validate_type(Elements *obj, Element_Type type){
@@ -26,31 +33,73 @@ static bool validate_type(Elements *obj, Element_Type type){
   return false;
 }
 
+static std::string get_next_key(const std::string data, const int key_start, size_t remaining_len) {
+  std::string   key;
+  int           key_end = -1;
+
+  if (data.at(key_start) != '"'){
+    //Invalid Key start - Keys are always expected to start with double quotes
+    std::cout << "DEBUG :: Invalid Key start : " << data.at(key_start) << std::endl;
+    return "";
+  }
+
+  for (size_t i = key_start + 1; i < remaining_len ; i++) {
+    char c = data.at(i);
+    
+    if(!valid_keychar(c)){
+      // Invalud Key character found ABORT
+      std::cout << "DEBUG :: Invalid char at : " << std::to_string(i) <<", char : "<<  c << std::endl;
+      return "";
+    }
+
+    if(c == '"') {
+      key_end = i;
+      break;
+    } 
+  }
+
+  key = data.substr(key_start + 1, key_end - key_start - 1);
+  std::cout << "DEBUG : extracted key : " << key << std::endl;
+
+  return key;
+}
+
 static bool parse_obj(JSONObject *obj, std::string &data, size_t length, std::string &err) {
 
   // iterate through json object
-  unsigned int i = 0;
-  bool searching_key = true;
+  bool          searching_key = true;
+  std::string   active_key;
 
-  for (char c : data) {
-    i++;
-    if ((is_char_ignored(c) || (i==1 && c == OBJ_BEGIN_VALID))  
-          && i < length) {
+  for(size_t j = 0; j < length ;j++) {
+//  for (char c : data) {
+    char c = data.at(j);
+    if (is_char_ignored(c) || (j==0 && c == OBJ_BEGIN_VALID)) {
       continue;
     }
 
-    if(c != '"' && searching_key) {
-      std::cerr << "Char that violated rules : " << c << std::endl;
-      err = "Missing Key, Invalid "+ obj->get_name() + " Object";
+    if(searching_key && c == '"') {
+      // Start of a new key
+      size_t remaining_len = length - j;
+      active_key = get_next_key((const std::string) data , j, remaining_len);
+
+      if(active_key.length() < 1) {
+        err = "ERRROR : Invalid Key, error parsing";
+        return false;
+      }
+
+      std::cout << "DEBUG : Key = " << active_key << std::endl;
+      // Temp break
+      break;
+      obj->get_name();
+
+    } else if(searching_key == false) {
+      //Logic to parse value for active key
+    }
+    else {
+      //Invalid object
+      err = "Invalid Object parsed, cant parse char at : " + std::to_string(j);
       return false;
     }
-    else if (searching_key) {
-      //Found key starting now capture key from next char
-      searching_key = false;
-      continue;
-    }
-
-
 
   }
 

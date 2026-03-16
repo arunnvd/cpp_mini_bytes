@@ -1,3 +1,4 @@
+#include <charconv>
 #include <iostream>
 #include "json.h"
 #include "elements.h"
@@ -33,13 +34,25 @@ static bool validate_type(Elements *obj, Element_Type type){
   return false;
 }
 
+static Elements* get_next_value(const std::string data, const int value_start, size_t remaining_len) {
+  Elements * next_value = nullptr;
+  
+  char c = data.at(value_start);
+
+  if(is_string(c)) {
+    (void) remaining_len;
+  }
+
+  return next_value;
+}
+
 static std::string get_next_key(const std::string data, const int key_start, size_t remaining_len) {
   std::string   key;
   int           key_end = -1;
 
   if (data.at(key_start) != '"'){
     //Invalid Key start - Keys are always expected to start with double quotes
-    std::cout << "DEBUG :: Invalid Key start : " << data.at(key_start) << std::endl;
+    //std::cout << "DEBUG :: Invalid Key start : " << data.at(key_start) << std::endl;
     return "";
   }
 
@@ -48,7 +61,7 @@ static std::string get_next_key(const std::string data, const int key_start, siz
     
     if(!valid_keychar(c)){
       // Invalud Key character found ABORT
-      std::cout << "DEBUG :: Invalid char at : " << std::to_string(i) <<", char : "<<  c << std::endl;
+      //std::cout << "DEBUG :: Invalid char at : " << std::to_string(i) <<", char : "<<  c << std::endl;
       return "";
     }
 
@@ -69,6 +82,7 @@ static bool parse_obj(JSONObject *obj, std::string &data, size_t length, std::st
   // iterate through json object
   bool          searching_key = true;
   std::string   active_key;
+  int           key_value_separator_index = -1;
 
   for(size_t j = 0; j < length ;j++) {
 //  for (char c : data) {
@@ -93,7 +107,23 @@ static bool parse_obj(JSONObject *obj, std::string &data, size_t length, std::st
       obj->get_name();
 
     } else if(searching_key == false) {
-      //Logic to parse value for active key
+      //Wait until ':' and then the first valid char
+      if(c != ':') {
+        err = "Invalid key-value separator at index : " + std::to_string(j) + " , char : " + c ;
+        return false;
+      } else if(key_value_separator_index < 0) {
+        //Found separator, update separator index and continue
+        key_value_separator_index = j;
+        continue;
+      } else {
+
+        //This will be the first char of value. identify the type and create an object.
+        size_t remaining_len = length - j;
+        Elements* value = get_next_value((const std::string) data, j, remaining_len);
+        (void) value;
+
+      }
+
     }
     else {
       //Invalid object

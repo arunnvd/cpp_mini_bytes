@@ -17,8 +17,26 @@ class Elements {
 
   public:
     virtual Element_Type get_type() = 0;
+    virtual std::string display() = 0;
     virtual ~Elements() = default;
 
+};
+
+class JSONNull : public Elements {
+  private :
+    Element_Type type {Element_Type::JSON_ELEMENT_NULL};
+  public:
+    Element_Type get_type();
+    std::string  display();
+};
+
+class JSONString : public Elements {
+  private:
+    std::string data;
+    Element_Type type {Element_Type::JSON_ELEMENT_STRING};
+  public:
+    Element_Type get_type();
+    std::string  display();
 };
 
 class JSONObject : public Elements {
@@ -39,4 +57,6 @@ class JSONObject : public Elements {
     Element_Type  get_type();
     bool          is_valid(const std::string data_obj, size_t length, std::string &error_message);
     std::string   get_name();
+    bool          add_element(std::string name, Elements element);
+    std::string   display();
 };

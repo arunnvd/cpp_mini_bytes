@@ -46,3 +46,37 @@ bool JSONObject::is_valid(const std::string data_obj,
 std::string JSONObject::get_name() {
   return name;
 }
+
+std::string JSONObject::display() {
+  return "Not Implemented Yet\n";
+}
+
+/* --------------------------------------------------------------------------- 
+*
+* JSONNull 
+*
+* ---------------------------------------------------------------------------*/
+
+Element_Type JSONNull::get_type() {
+  return type;
+}
+
+std::string JSONNull::display() {
+  return "Null";
+}
+
+
+/* --------------------------------------------------------------------------- 
+*
+* JSONString
+*
+* ---------------------------------------------------------------------------*/
+
+
+Element_Type JSONString::get_type() {
+  return type;
+}
+
+std::string JSONString::display() {
+  return data;
+}

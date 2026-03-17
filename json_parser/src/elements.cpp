@@ -2,6 +2,10 @@
 #include "utils.h"
 #include <iostream>
 
+inline bool is_valid_char(char c) {
+  return !(c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\0');
+}
+
 // ------ Constructors & Destructors -------------
 
 JSONObject::JSONObject() : name{"root"} {
@@ -32,14 +36,19 @@ bool JSONObject::is_valid(const std::string data_obj,
   }
 
   //Validate first and last chars
-  if(data_obj.at(0) == OBJ_BEGIN_VALID 
-      && data_obj.at(length -1) == OBJ_END_VALID) {
-    error_messge = "No Error";
-    return true;
+
+  if(data_obj.at(0) != OBJ_BEGIN_VALID ) {
+    error_messge = "Invalid start char";
+    return false;
   }
 
-  error_messge = "Invalid Object, can't parse";
-  return false;
+  if (data_obj.back() != OBJ_END_VALID) {
+    error_messge = "Invalid Last char";
+    return false;
+  }
+
+  error_messge = "No Error";
+  return true;
   
 }
 
@@ -72,6 +81,10 @@ std::string JSONNull::display() {
 *
 * ---------------------------------------------------------------------------*/
 
+JSONString::JSONString(std::string value) {
+  std::cout << "JSONString constructor called with value "<< value << std::endl;
+
+}
 
 Element_Type JSONString::get_type() {
   return type;

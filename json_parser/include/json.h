@@ -28,6 +28,10 @@ constexpr inline bool is_object(char c) {
   return (c == '{');
 }
 
+constexpr inline bool string_last_char(char c) {
+  return (c == '"'); // Not considering escape char now
+}
+
 
 class JSON{
   private:

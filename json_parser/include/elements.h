@@ -35,6 +35,8 @@ class JSONString : public Elements {
     std::string data;
     Element_Type type {Element_Type::JSON_ELEMENT_STRING};
   public:
+    JSONString(std::string value);
+
     Element_Type get_type();
     std::string  display();
 };

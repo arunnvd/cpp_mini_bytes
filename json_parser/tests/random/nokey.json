@@ -1,3 +1,4 @@
 {
-    "key" : "test"
+    "key" : "test",
+	"second_key" : "test_2"
 }

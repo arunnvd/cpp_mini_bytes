@@ -1,4 +1,5 @@
 #include "elements.h"
+#include "json.h"
 #include "utils.h"
 #include <iostream>
 
@@ -58,6 +59,17 @@ std::string JSONObject::get_name() {
 
 std::string JSONObject::display() {
   return "Not Implemented Yet\n";
+}
+
+bool JSONObject::add_element(std::string key, std::unique_ptr<Elements> value) {
+
+  if(key.empty() || value == nullptr) {
+    std::cerr << "Invalid Object passed !! \n";
+    return false;
+  }
+
+  data[key] = std::move(value);
+  return true;
 }
 
 /* --------------------------------------------------------------------------- 

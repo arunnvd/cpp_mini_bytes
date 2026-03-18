@@ -59,6 +59,6 @@ class JSONObject : public Elements {
     Element_Type  get_type();
     bool          is_valid(const std::string data_obj, size_t length, std::string &error_message);
     std::string   get_name();
-    bool          add_element(std::string name, Elements element);
     std::string   display();
+    bool          add_element(std::string key, std::unique_ptr<Elements> value);
 };

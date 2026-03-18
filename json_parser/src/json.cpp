@@ -1,10 +1,10 @@
-#include <charconv>
 #include <cstddef>
 #include <iostream>
 #include "json.h"
 #include "elements.h"
 #include "utils.h"
 #include <bitset>
+#include <memory>
 #include <string>
 
 // VALID Non Function Chars
@@ -35,7 +35,7 @@ static bool validate_type(Elements *obj, Element_Type type){
   return false;
 }
 
-static std::string get_string_value(const std::string data, const int start_pos, bool &status) {
+static std::string get_string_value(const std::string data, const int start_pos, bool &status, int &str_end_pos) {
   // find closing or illegal char
   size_t last_pos = start_pos;
 
@@ -49,31 +49,30 @@ static std::string get_string_value(const std::string data, const int start_pos,
   }
 
   status = true;
+  str_end_pos = last_pos;
   return data.substr(start_pos, (last_pos - start_pos));
 }
 
-static Elements* get_next_value(const std::string data, const int value_start, size_t remaining_len) {
-  Elements * next_value = nullptr;
+static std::unique_ptr<Elements> get_next_value(const std::string data, const int value_start, int &value_end) {
   
   char c = data.at(value_start);
-  std::cout << "start : " << std::to_string(value_start) << "- end : "<< std::to_string(remaining_len) << "\n";
 
   if(is_string(c)) {
     bool stat;
-    std::string value = get_string_value(data, value_start + 1, stat);
+    std::string value = get_string_value(data, value_start + 1, stat, value_end);
     if(stat ==false) {
       // illegal string value, break
       return nullptr;
     }
 
-    next_value = new JSONString(value);
+    auto next_value = std::make_unique<JSONString>(value);
     return next_value;
   }
 
-  return next_value;
+  return nullptr;
 }
 
-static std::string get_next_key(const std::string data, const int key_start, size_t remaining_len, int &end_pos) {
+static std::string get_next_key(const std::string data, const int key_start, int &end_pos) {
   std::string   key;
   int           key_end = -1;
 
@@ -83,7 +82,7 @@ static std::string get_next_key(const std::string data, const int key_start, siz
     return "";
   }
 
-  for (size_t i = key_start + 1; i < remaining_len ; i++) {
+  for (size_t i = key_start + 1; i < data.length() ; i++) {
     char c = data.at(i);
     
     if(!valid_keychar(c)){
@@ -108,9 +107,11 @@ static std::string get_next_key(const std::string data, const int key_start, siz
 static bool parse_obj(JSONObject *obj, std::string &data, size_t length, std::string &err) {
 
   // iterate through json object
-  bool          searching_key = true;
-  std::string   active_key;
-  int           key_value_separator_index = -1;
+  bool                      searching_key = true;
+  bool                      searching_comma = false;
+  std::string               active_key;
+  int                       key_value_separator_index = -1;
+  std::unique_ptr<Elements> value;
 
   for(size_t j = 0; j < length ;) {
     char c = data.at(j);
@@ -121,9 +122,8 @@ static bool parse_obj(JSONObject *obj, std::string &data, size_t length, std::st
 
     if(searching_key && c == '"') {
       // Start of a new key
-      size_t remaining_len = length - j;
       int end_pos = 0;
-      active_key = get_next_key((const std::string) data , j, remaining_len, end_pos);
+      active_key = get_next_key((const std::string) data , j,  end_pos);
 
       if(active_key.length() < 1) {
         err = "ERRROR : Invalid Key, error parsing";
@@ -135,7 +135,7 @@ static bool parse_obj(JSONObject *obj, std::string &data, size_t length, std::st
       j = end_pos + 1;
       continue;
 
-    } else if(searching_key == false) {
+    } else if(searching_key == false && searching_comma == false) {
       //Wait until ':' and then the first valid char
       if(c != ':' && key_value_separator_index < 0) {
         err = "Invalid key-value separator at index : " + std::to_string(j) + " , char : " + c ;
@@ -148,17 +148,36 @@ static bool parse_obj(JSONObject *obj, std::string &data, size_t length, std::st
       } else {
 
         //This will be the first char of value. identify the type and create an object.
-        size_t remaining_len = length - j;
-        Elements* value = get_next_value((const std::string) data, j, remaining_len);
+        int value_end_pos;
+        value = get_next_value((const std::string) data, j, value_end_pos);
         if(value == nullptr) {
           err = "Value parsing failed, Invalid Object";
           return false;
         }
-        std::cout << "Parsed value = " << value->display() << std::endl;
-
+        obj->add_element(active_key, std::move(value));
+        key_value_separator_index = -1;
+        searching_comma = true;
+        j = value_end_pos;
       }
-      (void) obj;
 
+    } else if(searching_comma) {
+      if (c == OBJ_END_VALID) {
+        // Nothing more to parse
+        return true;
+      }
+
+      if(c == ',') {
+        // End of key-value pair go to next_value
+        searching_comma = false;
+        searching_key = true;
+        j++;
+        continue;
+      }
+
+      std::cout << "Char caused failure = " << c << std::endl;
+
+      err = "Elements are not separated using ','";
+      return false; // No separator found
     }
     else {
       //Invalid object

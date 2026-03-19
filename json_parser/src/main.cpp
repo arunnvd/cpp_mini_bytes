@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     inputFile.close();
 
     std::string file_contents = buffer.str();
-    std::cout << "FileContent : " << file_contents << std::endl;
+    //std::cout << "FileContent : " << file_contents << std::endl;
 
     std::string Err;
     size_t json_length = file_contents.length();
@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
     }
     else {
       std::cout << "Valid JSON Object \n";
+      std::cout << "JSON Object parsed : \n" << json.to_str() << std::endl;
     }
   }
   else {

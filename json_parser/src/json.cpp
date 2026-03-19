@@ -99,7 +99,7 @@ static std::string get_next_key(const std::string data, const int key_start, int
   }
 
   key = data.substr(key_start + 1, key_end - key_start - 1);
-  std::cout << "DEBUG : extracted key : " << key << std::endl;
+  //std::cout << "DEBUG : extracted key : " << key << std::endl;
 
   return key;
 }
@@ -130,7 +130,7 @@ static bool parse_obj(JSONObject *obj, std::string &data, size_t length, std::st
         return false;
       }
 
-      std::cout << "DEBUG : Key = " << active_key << std::endl;
+      //std::cout << "DEBUG : Key = " << active_key << std::endl;
       searching_key = false;
       j = end_pos + 1;
       continue;
@@ -193,11 +193,15 @@ static bool parse_obj(JSONObject *obj, std::string &data, size_t length, std::st
 
 
 JSON::JSON(std::string data, size_t length) : base_data (std::move(data)), total_length(length) {
-  std::cout << "JSON CLASS CREATED\n";
+  //std::cout << "JSON CLASS CREATED\n";
 }
 
 JSON::~JSON() {
-  std::cout << "Class destroyed \n";
+  //std::cout << "Class destroyed \n";
+  if(json_root) {
+    std::cout << "Destroying the root node\n";
+    delete json_root;
+  }
 }
 
 bool JSON::parse() {
@@ -214,11 +218,22 @@ bool JSON::parse() {
     return false;
   }
 
+  root->set_total_length(total_length);
+
   //Start parsing now.
   if (!parse_obj(root, base_data, total_length, error)) {
     std::cerr << "Parsing failed : " << error << std::endl;
     return false;
   }
-  
+  json_root = root;
   return true;
+}
+
+
+std::string JSON::to_str() {
+  if(json_root) {
+    return json_root->display();
+  } else {
+    return "ERROR :: Json parsing not completed! Call JSON.parse() before using to_str";
+  }
 }

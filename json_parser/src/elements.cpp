@@ -53,12 +53,30 @@ bool JSONObject::is_valid(const std::string data_obj,
   
 }
 
+void JSONObject::set_total_length(size_t total_length) {
+  if(total_length > 0){
+    length = total_length;
+  }
+  else {
+    std::cout << "ERROR : Invalid total Length is passed \n" ;
+  }
+}
+
 std::string JSONObject::get_name() {
   return name;
 }
 
 std::string JSONObject::display() {
-  return "Not Implemented Yet\n";
+  std::string display_str;
+  display_str.reserve(length);
+  display_str += "{ \n";
+
+  for(const auto& [key, value]: data) {
+    display_str += key + " : " + value->display() + "\n";
+  }
+
+  display_str += "}";
+  return display_str;
 }
 
 bool JSONObject::add_element(std::string key, std::unique_ptr<Elements> value) {
@@ -93,8 +111,8 @@ std::string JSONNull::display() {
 *
 * ---------------------------------------------------------------------------*/
 
-JSONString::JSONString(std::string value) {
-  std::cout << "JSONString constructor called with value "<< value << std::endl;
+JSONString::JSONString(std::string value) : data(value){
+  //std::cout << "JSONString constructor called with value "<< value << std::endl;
 
 }
 

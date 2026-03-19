@@ -1,5 +1,6 @@
 #pragma once
 
+#include "elements.h"
 #include <cstddef>
 #include <string>
 
@@ -37,10 +38,12 @@ class JSON{
   private:
     std::string  base_data;
     size_t total_length {0};
+    JSONObject *json_root;
   public:
     JSON(std::string data, size_t length);
     ~JSON();
     
-    bool parse();
+    bool        parse();
+    std::string to_str();
 };
 

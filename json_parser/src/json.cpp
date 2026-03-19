@@ -6,6 +6,9 @@
 #include <bitset>
 #include <memory>
 #include <string>
+#include <optional>
+#include <string_view>
+#include <charconv>
 
 // VALID Non Function Chars
 
@@ -53,6 +56,78 @@ static std::string get_string_value(const std::string data, const int start_pos,
   return data.substr(start_pos, (last_pos - start_pos));
 }
 
+static std::optional<double> get_number(const std::string &data,const int value_start, int &value_end) {
+  size_t last_pos = data.find(',', value_start);
+  if(last_pos == std::string::npos) {
+    //Check if it is last element in the json
+    last_pos = data.find('}', value_start);
+    if(last_pos == std::string::npos) {
+      std::cout << "ERROR : Could not find , or } in the passed value substring \n";
+      return std::nullopt;
+    }
+  }
+
+  value_end = last_pos-1;
+  std::string temp_datastr = data.substr(value_start);
+
+  std::string_view number_substr(temp_datastr.c_str(), last_pos);
+  size_t start = number_substr.find_first_not_of(" \t");
+  size_t end   = number_substr.find_last_not_of(" \t");
+
+  if (start == std::string_view::npos)
+    return std::nullopt;
+
+  //std::cout << "DEBUG :: Start number parsing now\n";
+
+  number_substr = number_substr.substr(start, end - start + 1);
+  double value;
+  auto result = std::from_chars(number_substr.data(), number_substr.data() + number_substr.size(), value);
+
+  if (result.ec != std::errc() /*|| result.ptr != number_substr.data() + number_substr.size()*/) {
+    return std::nullopt;  // invalid number
+  }
+
+  //std::cout << "DEBUG :: Value parsed to number Successfully, number = " << std::to_string(value) << std::endl;
+  return value;
+}
+
+static bool get_null(const std::string &data, const int value_start, int &value_end) {
+
+  size_t last_pos = data.find(',', value_start);
+  if(last_pos == std::string::npos) {
+    //Check if it is last element in the json
+    last_pos = data.find('}', value_start);
+    if(last_pos == std::string::npos) {
+      std::cout << "ERROR : Could not find , or } in the passed value substring \n";
+      return false;
+    }
+  }
+
+  value_end = last_pos - 1;
+  return true;
+}
+
+static bool get_boolean(const std::string &data, const int value_start, int &value_end) {
+
+  size_t last_pos = data.find(',', value_start);
+  if(last_pos == std::string::npos) {
+    //Check if it is last element in the json
+    last_pos = data.find('}', value_start);
+    if(last_pos == std::string::npos) {
+      std::cout << "ERROR : Could not find , or } in the passed value substring \n";
+      return false;
+    }
+  }
+
+  value_end = last_pos - 1;
+  std::string temp_datastr = data.substr(value_start);
+
+  std::string_view bool_substr(temp_datastr.c_str(), last_pos);
+  size_t start = bool_substr.find_first_not_of(" \t");
+  size_t end   = bool_substr.find_last_not_of(" \t");
+
+}
+
 static std::unique_ptr<Elements> get_next_value(const std::string data, const int value_start, int &value_end) {
   
   char c = data.at(value_start);
@@ -67,6 +142,26 @@ static std::unique_ptr<Elements> get_next_value(const std::string data, const in
 
     auto next_value = std::make_unique<JSONString>(value);
     return next_value;
+  }
+
+  if(is_number(c)) {
+    auto result = get_number(data, value_start, value_end);
+    if (!result.has_value()) {
+      return  nullptr;
+    }
+
+    double number = result.value();
+    auto number_element = std::make_unique<JSONNumber>(number);
+    return number_element;
+  }
+
+  if(is_null(c)) {
+    if(!get_null(data, value_start, value_end)) {
+      return nullptr;
+    }    
+
+    auto null_element = std::make_unique<JSONNull>();
+    return null_element;
   }
 
   return nullptr;

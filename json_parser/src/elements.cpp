@@ -2,6 +2,7 @@
 #include "json.h"
 #include "utils.h"
 #include <iostream>
+#include <string>
 
 inline bool is_valid_char(char c) {
   return !(c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\0');
@@ -122,4 +123,23 @@ Element_Type JSONString::get_type() {
 
 std::string JSONString::display() {
   return data;
+}
+
+
+/* --------------------------------------------------------------------------- 
+*
+* JSONNumber
+*
+* ---------------------------------------------------------------------------*/
+
+JSONNumber::JSONNumber(double value) : data{value} {
+
+}
+
+Element_Type JSONNumber::get_type() {
+  return type;
+}
+
+std::string JSONNumber::display() {
+  return std::to_string(data);
 }

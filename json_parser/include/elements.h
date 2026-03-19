@@ -41,6 +41,17 @@ class JSONString : public Elements {
     std::string  display();
 };
 
+class JSONNumber : public Elements {
+  private:
+    double data;
+    Element_Type type {Element_Type::JSON_ELEMENT_NUMBER};
+  public:
+    JSONNumber(double value);
+
+    Element_Type get_type();
+    std::string  display();
+};
+
 class JSONObject : public Elements {
 
   private:

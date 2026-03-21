@@ -42,8 +42,42 @@ make
 ./guessinggame
 ```
 
-[Full Details](./guessing_game/README.md)
+[Full Details](./guessing_game/README.md)   
 
+### 2. JSON Parser
+A lightweight JSON parser written in C++ (17) that can parse and validate JSON files, display parsed stryctures.   
+
+```
+json_parser/
+├── CMakeLists.txt          # CMake build configuration
+├── README.md               # This file
+├── include/                # Header files
+│   ├── elements.h          # JSON element type definitions
+│   ├── json.h              # JSON parser class definition
+│   └── utils.h             # Utility functions
+├── src/                    # Source files
+│   ├── main.cpp            # Entry point
+│   ├── json.cpp            # JSON parser implementation
+│   └── elements.cpp        # Element type implementations
+├── tests/                  # Test files
+│   ├── step1/              # Basic step tests
+│   ├── step2/              # Intermediate tests
+│   ├── step3/              # Advanced tests
+│   ├── step4/              # Complex tests
+│   └── random/             # Random test cases
+└── build/                  # Build output directory (generated)
+```
+**Build & Run**
+```bash
+cd json_parser
+cd build
+cmake ..
+make
+
+./jsoncpp <path-to-json-file>
+```
+
+[Full Details](./json_parser/README.md)
 ## 📋 Prerequisites
 
 - **C++ Compiler** (GCC, Clang, or MSVC with C++17 support)

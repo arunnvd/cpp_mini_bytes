@@ -2,6 +2,7 @@
     "key" : "test",
 	"second_key" : "test_2",
     "nill_element" : null,
-    "number" : 123 
+    "number" : 123 ,
+    "boo" : true
     
 }

@@ -5,6 +5,7 @@
 #include "utils.h"
 #include <bitset>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <optional>
 #include <string_view>
@@ -107,9 +108,10 @@ static bool get_null(const std::string &data, const int value_start, int &value_
   return true;
 }
 
-static bool get_boolean(const std::string &data, const int value_start, int &value_end) {
+static bool get_boolean(const std::string &data, const int value_start, bool& value, int &value_end) {
 
   size_t last_pos = data.find(',', value_start);
+
   if(last_pos == std::string::npos) {
     //Check if it is last element in the json
     last_pos = data.find('}', value_start);
@@ -122,10 +124,26 @@ static bool get_boolean(const std::string &data, const int value_start, int &val
   value_end = last_pos - 1;
   std::string temp_datastr = data.substr(value_start);
 
-  std::string_view bool_substr(temp_datastr.c_str(), last_pos);
+  std::string_view bool_substr(temp_datastr.c_str(), last_pos - value_start);
+  std::cout << "Boolean substring = " << bool_substr << std::endl;
   size_t start = bool_substr.find_first_not_of(" \t");
-  size_t end   = bool_substr.find_last_not_of(" \t");
+  size_t end   = bool_substr.find_last_not_of(" \t\n\r");
 
+  if (start == std::string_view::npos)
+    return false;
+
+  bool_substr = bool_substr.substr(start, end - start + 1);
+
+  if(bool_substr == "true") {
+    value = true;
+    return true;
+  } else if (bool_substr == "false") {
+    value = false;
+    return true;
+  }
+
+  std::cerr << "Error : Boolean parsing failed for str : " << bool_substr << std::endl;
+  return false;
 }
 
 static std::unique_ptr<Elements> get_next_value(const std::string data, const int value_start, int &value_end) {
@@ -163,6 +181,31 @@ static std::unique_ptr<Elements> get_next_value(const std::string data, const in
     auto null_element = std::make_unique<JSONNull>();
     return null_element;
   }
+
+  if(is_boolean(c)) {
+    bool value;
+    if(!get_boolean(data, value_start, value, value_end)) {
+      return nullptr;
+    }
+
+    auto bool_element = std::make_unique<JSONBool>(value);
+    return bool_element;
+  }
+
+  if(is_array(c)) {
+    //TODO : Implement array parsing and creating element
+    std::cout << "Unimpelemented Elelement present in the object, cannot parse\n";
+    return nullptr;
+  }
+
+  if(is_object(c)){
+    //TODO : Implement array parsing and creating element
+    std::cout << "Unimpelemented Elelement present in the object, cannot parse\n";
+    return nullptr;
+  }
+
+  // Un identified element present, parsing failed
+  std::cerr << "Value is not belongs to valid types, parsing failed!\n";
 
   return nullptr;
 }

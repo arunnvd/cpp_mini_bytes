@@ -41,6 +41,17 @@ class JSONString : public Elements {
     std::string  display();
 };
 
+class JSONBool : public Elements {
+  private :
+    bool         data;
+    Element_Type type {Element_Type::JSON_ELEMENT_BOOLEAN};
+  public:
+    JSONBool(bool value);
+
+    Element_Type get_type();
+    std::string  display();
+};
+
 class JSONNumber : public Elements {
   private:
     double data;

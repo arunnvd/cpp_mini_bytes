@@ -143,3 +143,22 @@ Element_Type JSONNumber::get_type() {
 std::string JSONNumber::display() {
   return std::to_string(data);
 }
+
+
+/* --------------------------------------------------------------------------- 
+*
+* JSONBool
+*
+* ---------------------------------------------------------------------------*/
+
+JSONBool::JSONBool(bool value) : data{value} {
+
+}
+
+Element_Type JSONBool::get_type() {
+  return type;
+}
+
+std::string JSONBool::display() {
+  return data ? "true" : "false";
+}

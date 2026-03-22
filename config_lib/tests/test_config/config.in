@@ -1,0 +1,5 @@
+# This is a test file used for testing the cpp lib
+port=8080
+debug = true
+timeout=30
+host=localhost

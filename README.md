@@ -42,9 +42,33 @@ make
 ./guessinggame
 ```
 
-[Full Details](./guessing_game/README.md)   
+[Full Details](./guessing_game/README.md)
 
-### 2. JSON Parser
+### 2. Config Library
+A lightweight configuration file parser library written in C++ (17) that provides utilities to parse and manage configuration files with support for key-value pairs.
+
+```
+config_lib/
+├── CMakeLists.txt          # CMake build configuration
+├── README.md               # Project-specific documentation
+├── include/                # Header files
+│   └── configlib.h         # Configuration library interface
+├── src/                    # Source files
+│   ├── configlib.cpp       # Config implementation
+│   └── config_exception.cpp # Exception handling
+└── build/                  # Build output directory (generated)
+```
+
+**Build & Run:**
+```bash
+cd config_lib/build
+cmake ..
+make
+```
+
+[Full Details](./config_lib/README.md)
+
+### 3. JSON Parser
 A lightweight JSON parser written in C++ (17) that can parse and validate JSON files, display parsed stryctures.   
 
 ```

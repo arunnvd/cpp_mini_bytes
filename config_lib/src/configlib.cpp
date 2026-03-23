@@ -1,6 +1,6 @@
 #include "configlib.h"
-#include <atomic>
 #include <fstream>
+#include <iostream>
 #include <optional>
 #include <utility>
 
@@ -40,23 +40,25 @@ namespace config {
     // Nothing doing here for now
   }
 
-  bool Config::load(std::string path, std::string &error) {
+  bool Config::load(std::string path) {
 
     if (path.empty()) {
-      error = "Invalid config path, can't parse!";
-      return false;
+      //error = "Invalid config path, can't parse!";
+      throw ConfigFileException("Invalid File path");
     }
 
     std::ifstream cfg_file(path);
     std::string   line_read;
+    int           line_number = 0;
 
     if(!cfg_file.is_open()) {
-      error = "Unable to open config file";
-      return false;
+      //error = "Unable to open config file";
+      throw ConfigFileException("Unable to open config file");
     }
 
     while (std::getline(cfg_file, line_read)) {
       std::string line = trim_whitespace(line_read);
+      line_number ++ ;
 
       // Ignore if line is empty
       if(line.empty()) {
@@ -70,10 +72,9 @@ namespace config {
       auto config_pair = split_key_value(line);
 
       if(config_pair == std::nullopt) {
-        error = "Invalid Key value pair at line : " + line ;
+        //error = "Invalid Key value pair at line : " + line ;
         cfg_file.close();
-        return false;
-
+        throw ConfigParseException("Invalid key-value pair", line_number);
       }
 
       data.insert((std::pair<std::string, std::string>) *config_pair);
@@ -84,5 +85,19 @@ namespace config {
     cfg_file.close();
     return config_ready;
   }
+
+  void Config::dump_cfg() {
+    if(config_ready == false) {
+      std::cout << "Data not ready\n";
+      return;
+    }
+
+    for(const auto &[key, value] : data) {
+      std::cout << key << " :: " << value << std::endl;
+    }
+
+  }
+
+
 
 }

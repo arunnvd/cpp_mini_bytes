@@ -1,18 +1,17 @@
-#include <cassert>
-#include <iostream>
+//#include <cassert>
 #include "configlib.h"
+#include <gtest/gtest.h>
 
 //using namespace config;
 
-int main () {
-  
+TEST(ConfiglibTest, BasicParse) {
   config::Config cfg;
   std::string error;
 
-  
-  assert(cfg.load("test_config/config.in", error) == true);
-  //assert(error.empty());
+  EXPECT_THROW(cfg.load("test_config/_config.in"), config::ConfigFileException);
 
-  std::cout << "Test completed and value = " << error << std::endl;
-  return 0;
+
+  cfg.dump_cfg();
 }
+
+

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <exception>
 #include <string>
 #include <unordered_map>
 
@@ -7,6 +8,30 @@ namespace config {
 
   const char config_debug = '#';
   const char config_delimitor = '=';
+
+
+  class ConfigException : public std::exception {
+    protected:
+      std::string message;
+    public:
+      explicit ConfigException(std::string msg);
+
+      const char* what() const noexcept override;
+  };
+
+  class ConfigFileException : public ConfigException {
+    public:
+      using ConfigException::ConfigException;
+  };
+
+  class ConfigParseException : public ConfigException {
+    private:
+      int line;
+    public:
+      ConfigParseException(std::string msg, int line);
+      int getline() const noexcept;
+  };
+
 
   class Config {
     private:
@@ -17,10 +42,12 @@ namespace config {
     public:
       Config(); // lets use default constructor for now.
 
-      bool load(std::string path, std::string& error);
+      bool load(std::string path);
 
       bool         get_bool(const std::string key);
       int          get_int(const std::string key);
       std::string  get_string(const std::string key);
+
+      void dump_cfg();  // For debug
   };
 }

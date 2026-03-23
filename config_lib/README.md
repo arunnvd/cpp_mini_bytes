@@ -22,7 +22,7 @@ This library provides utilities to parse and manage configuration files with sup
 > make
 
 // Run test
-> ctest ----output-on-failure
+> ctest --output-on-failure
 
 // Clean the project
 > make clean      # Remove built objects

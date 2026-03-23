@@ -21,4 +21,14 @@ namespace config {
     return line;
   }
 
+  ConfigTypeMissmatch::ConfigTypeMissmatch(std::string msg, std::string val)
+    : ConfigException(
+        msg + "(Actual Value = " + val + ")"
+        ), value(val) {
+
+  }
+
+  std::string ConfigTypeMissmatch::getvalue() const noexcept{
+    return value;
+  }
 }

@@ -1,4 +1,5 @@
 #include "configlib.h"
+#include <charconv>
 #include <fstream>
 #include <iostream>
 #include <optional>
@@ -86,10 +87,62 @@ namespace config {
     return config_ready;
   }
 
+  bool Config::get_bool(const std::string &key) {
+    if(config_ready == false) {
+      throw ConfigDataNotReady("Data not parsed");
+    }
+
+    if(data.count(key) == 0) {
+      throw ConfigKeyNotFound("Key not present");
+    }
+
+    const std::string value = data[key];
+
+    if(value == "True" || value == "true" || value == "TRUE" || value == "1") {
+      return true;
+    } else if(value == "False" || value =="false" || value == "FALSE" || value == "0") {
+      return false;
+    } else {
+      throw ConfigTypeMissmatch("Value is not a boolean", value);
+    }
+  }
+
+  int Config::get_int(const std::string &key) {
+    if(config_ready == false) {
+      throw ConfigDataNotReady("Data not parsed");
+    }
+
+    if(data.count(key) == 0) {
+      throw ConfigKeyNotFound("Key not present");
+    }
+
+    const std::string value = data[key];
+    int value_int;
+    try {
+      value_int = std::stoi(value);
+    } catch (const std::exception& e) {
+      throw ConfigTypeMissmatch("Value not integer", value);
+    }
+    return value_int;
+  }
+
+  std::string Config::get_string(const std::string &key) {
+    if(config_ready == false) {
+      throw ConfigDataNotReady("Data not parsed");
+    }
+
+    if(data.count(key) == 0) {
+      throw ConfigKeyNotFound("Key not present");
+    }
+
+    const std::string value = data[key];
+    return value;
+  }
+
   void Config::dump_cfg() {
     if(config_ready == false) {
       std::cout << "Data not ready\n";
-      return;
+      throw ConfigDataNotReady("Data not parsed");
     }
 
     for(const auto &[key, value] : data) {

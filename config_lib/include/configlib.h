@@ -32,6 +32,23 @@ namespace config {
       int getline() const noexcept;
   };
 
+  class ConfigDataNotReady : public ConfigException {
+    public:
+      using ConfigException::ConfigException;
+  };
+
+  class ConfigKeyNotFound : public ConfigException {
+    public:
+      using ConfigException::ConfigException;
+  };
+
+  class ConfigTypeMissmatch : public ConfigException {
+    private:
+      std:: string value;
+    public:
+      ConfigTypeMissmatch(std::string msg, std::string val);
+      std::string getvalue() const noexcept;
+  };
 
   class Config {
     private:
@@ -44,9 +61,9 @@ namespace config {
 
       bool load(std::string path);
 
-      bool         get_bool(const std::string key);
-      int          get_int(const std::string key);
-      std::string  get_string(const std::string key);
+      bool         get_bool(const std::string &key);
+      int          get_int(const std::string &key);
+      std::string  get_string(const std::string &key);
 
       void dump_cfg();  // For debug
   };

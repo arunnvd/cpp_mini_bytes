@@ -102,6 +102,33 @@ make
 ```
 
 [Full Details](./json_parser/README.md)
+
+### 4. SSE Client Library
+A lightweight Server-Sent Events (SSE) client library written in C++ (17) that provides utilities to connect to SSE endpoints and receive real-time events from servers.
+
+```
+sse_client/
+├── CMakeLists.txt          # CMake build configuration
+├── README.md               # Project-specific documentation
+├── include/                # Header files
+│   └── sseclient.h         # SSE client library interface
+├── src/                    # Source files
+│   └── sseclient.cpp       # SSE client implementation
+├── tests/                  # Test files
+│   └── test_main.cpp       # Unit tests
+└── build/                  # Build output directory (generated)
+```
+
+**Build & Run:**
+```bash
+cd sse_client/build
+cmake ..
+make
+ctest --output-on-failure
+```
+
+[Full Details](./sse_client/README.md)
+
 ## 📋 Prerequisites
 
 - **C++ Compiler** (GCC, Clang, or MSVC with C++17 support)

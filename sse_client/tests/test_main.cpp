@@ -1,12 +1,30 @@
 #include "sseclient.h"
 
+#include <cstdlib>
 #include <gtest/gtest.h>
 #include <string>
 #include <unistd.h>
 #include <iostream>
 
-void events_recv(std::string &str) {
-  std::cout << "rcvd: " << str << std::endl;
+void on_message(eventsource::Event *e) {
+  std::cout << "rcvd: " << e->data << std::endl;
+  free(e);
+}
+
+void on_error(eventsource::Event *e) {
+  std::cout << "error: " << e->data << std::endl;
+  free(e);
+}
+
+void on_disconnect(eventsource::Event *e) {
+  std::cout << "disconnected: " << e->data << std::endl;
+  free(e);
+}
+
+void on_open(eventsource::Event *e) {
+
+  std::cout << "Open: " << e->data << std::endl;
+  free(e);
 }
 
 TEST(SSEClientTest, BasicInit) {
@@ -14,7 +32,10 @@ TEST(SSEClientTest, BasicInit) {
   eventsource::EventSource evt(url);
 
   evt.init();
-  evt.register_for_event(events_recv);
+  evt.add_event_listner(eventsource::EventType::MESSAGE, on_message, false);
+  evt.add_event_listner(eventsource::EventType::ERROR, on_error, false);
+  evt.add_event_listner(eventsource::EventType::OPEN, on_open, false);
+  evt.add_event_listner(eventsource::EventType::DISCONNECT, on_disconnect, false);
   evt.connect_sse();
 
   sleep (10);

@@ -9,6 +9,21 @@
 
 namespace eventsource {
 
+  std::string event_type_str(EventType e) {
+    switch (e) {
+      case EventType::MESSAGE:
+        return "message";
+      case EventType::ERROR:
+        return "error";
+      case EventType::OPEN:
+        return "open";
+      case EventType::DISCONNECT:
+        return "disconnect";
+      default:
+        return "none";
+    }
+  }
+
   void EventSource::parse_url(){
     if(url.empty()) {
       throw SSEException("Url not ready");
@@ -68,13 +83,17 @@ namespace eventsource {
     return true;
   }
 
-  bool EventSource::register_for_event(event_cb listner) {
+  bool EventSource::add_event_listner(EventType type, event_cb listner, bool force_overwrite) {
     if(!listner) {
       return false;
     }
 
-    active_listners.push_back(listner);
-    return true;
+    if(force_overwrite) {
+      event_listners[type] = listner;
+      return true;
+    }
+
+    return event_listners.emplace(type, listner).second;
   }
 
   bool EventSource::session_active() {
@@ -89,11 +108,13 @@ namespace eventsource {
     struct addrinfo hints{}, *res, *p;
     int resolve_status = -1;
 
+    ready_state = ReadyState::CONNECTING;
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
     resolve_status = getaddrinfo(hostname, port, &hints, &res);
     if(resolve_status != 0) {
+      ready_state = ReadyState::CLOSED;
       throw SSEException("Failed to resolve host");
     }
 
@@ -106,6 +127,7 @@ namespace eventsource {
       }
 
       if(connect(socket_handle, p->ai_addr, p->ai_addrlen) == 0) {
+        notify_listner(EventType::OPEN, "SSE Connection established");
         break;
       }
       else {
@@ -116,6 +138,8 @@ namespace eventsource {
       close(socket_handle);
       socket_handle= -1;
       freeaddrinfo(res);
+      notify_listner(EventType::ERROR, "Connect Failed");
+      ready_state = ReadyState::CLOSED;
       throw SSEException("Socket Connection Failed");
     }
 
@@ -145,7 +169,7 @@ namespace eventsource {
       //std::cout << "Received " << std::to_string(bytes) << " bytes of data\n"; 
 
       if(bytes <= 0) {
-        std::cout << "Connection Closed \n";
+        //std::cout << "Connection Closed \n";
         break;
       }
 
@@ -165,10 +189,7 @@ namespace eventsource {
         const auto message_idx = event.find_first_of (':');
         if(message_idx != std::string::npos) {
           event.erase(0, message_idx + 2);
-          for(event_cb message_cb : active_listners) {
-            message_cb(event);
-          }
-  
+          notify_listner(EventType::MESSAGE, event);  
         }
 
       }
@@ -176,16 +197,38 @@ namespace eventsource {
 
     close(socket_handle);
     socket_handle = -1;
+    ready_state = ReadyState::CLOSED;
+    notify_listner(EventType::DISCONNECT, "SSE Connection disconnected");
   }
 
   void EventSource::disconnect_sse() {
     stop_flag = true;
     shutdown(socket_handle, SHUT_RDWR);
+    ready_state = ReadyState::CLOSED;
   }
 
   void EventSource::wait_for_sse_close() {
     if(active_session_handle_t.joinable()) {
       active_session_handle_t.join();
+    }
+  }
+
+  ReadyState EventSource::get_readystate(){
+    return ready_state;
+  }
+
+  void EventSource::notify_listner(EventType type, const std::string &message){
+    Event *event = new Event();
+
+    event->event_type = type;
+    event->data = message;
+    event->source = hostname;
+
+    auto cb = event_listners.find(type);
+    if(cb != event_listners.end() && cb->second) {
+      cb->second(event);
+    } else {
+      std::cout << "No listner for event : " << event_type_str(type) << std::endl;
     }
   }
 }

@@ -104,7 +104,7 @@ make
 [Full Details](./json_parser/README.md)
 
 ### 4. SSE Client Library
-A lightweight Server-Sent Events (SSE) client library written in C++ (17) that provides utilities to connect to SSE endpoints and receive real-time events from servers.
+A lightweight Server-Sent Events (SSE) client library written in C++ (17) that provides utilities to connect to SSE endpoints and receive real-time events from servers. Implements the web EventSource API specification with type-specific event handling and connection state tracking.
 
 ```
 sse_client/
